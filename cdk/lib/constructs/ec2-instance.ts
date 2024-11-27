@@ -26,7 +26,9 @@ export class LlamaInstance extends Construct {
     userData.addCommands(
       '#!/bin/bash',
       'apt-get update',
-      'apt-get install -y make cmake gcc g++ build-essential python-is-python3 python3-pip python3-venv git',
+      'apt-get install -y make cmake gcc g++ build-essential python-is-python3 python3-pip python3-venv git jq',
+      'wget https://publish.djl.ai/awscurl/awscurl && chmod +x awscurl'
+
 
       // // Create working directory
       // 'mkdir -p /opt/llama',
@@ -55,6 +57,20 @@ export class LlamaInstance extends Construct {
       description: 'Security group for Llama instance',
       allowAllOutbound: true,
     });
+
+    // Allow inbound traffic on port 8080
+    securityGroup.addIngressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(8080),
+      'Allow inbound HTTP traffic on port 8080'
+    );
+
+    // Allow inbound SSH traffic on port 22
+    securityGroup.addIngressRule(
+      ec2.Peer.anyIpv4(),
+      ec2.Port.tcp(22),
+      'Allow inbound SSH traffic on port 22'
+    );
 
     // Create the EC2 instance
     this.instance = new ec2.Instance(this, 'LlamaInstance', {
